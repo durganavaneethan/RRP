@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.8">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.23">
+    <script>node {
+   def mvnHome
+   def dockerHome
+   stage(&apos;Code Checkout&apos;) { // for display purposes
+      git &apos;http://34.224.201.94:8081/git/root/petclinic.git&apos;
+      mvnHome = tool &apos;test&apos;
+      dockerHome = tool &apos;testdocker&apos;
+   }
+   stage(&apos;Build&apos;) {
+      if (isUnix()) {
+         sh &quot;&apos;${mvnHome}/bin/mvn&apos; -Dmaven.test.failure.ignore clean package&quot;
+      } else {
+         bat(/&quot;${mvnHome}\mbin\mvn&quot; -Dmaven.test.failure.ignore clean package/)
+      }
+   }
+   stage(&apos;Pushing Docker image to Registry&apos;) {
+      sh &quot;cp ${JENKINS_HOME}/Dockerfile .&quot;
+      sh &quot;&apos;${dockerHome}/bin/docker&apos; build -t 34.224.201.94:5000/${JOB_NAME}:${BUILD_NUMBER} .&quot;
+      sh &quot;&apos;${dockerHome}/bin/docker&apos; push 34.224.201.94:5000/${JOB_NAME}:${BUILD_NUMBER}&quot;
+   }
+    stage(&apos;SonarQube analysis&apos;) {
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; sonar:sonar&quot;
+  }
+   stage(&apos;Unit test&apos;) {
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; clean compile test&quot;
+      junit &apos;**/target/surefire-reports/*.xml&apos;
+      archive &apos;target/*.jar&apos;
+   }
+   stage(&apos;Generate Report&apos;){
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; clean install site&quot;
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: &apos;target/site&apos;, reportFiles: &apos;project-reports.html&apos;, reportName: &apos;Generated Reports&apos;])
+   }
+   stage(&apos;Deployment as docker container in Dev&apos;) {
+      sh &quot;ssh -i ${JENKINS_HOME}/NEWRRP.pem -o &apos;StrictHostKeyChecking no&apos; ec2-user@ec2-34-228-65-119.compute-1.amazonaws.com sudo docker rm -f ${JOB_NAME} || true &amp;&amp; ssh -i ${JENKINS_HOME}/NEWRRP.pem -o &apos;StrictHostKeyChecking no&apos; ec2-user@ec2-34-228-65-119.compute-1.amazonaws.com sudo docker run -d --restart=always --name ${JOB_NAME} -p 8088:8080 34.224.201.94:5000/${JOB_NAME}:${BUILD_NUMBER} || true&quot;
+      sh &quot;ssh -i ${JENKINS_HOME}/NEWRRP.pem -o &apos;StrictHostKeyChecking no&apos; ec2-user@ec2-54-204-112-155.compute-1.amazonaws.com sudo docker rm -f ${JOB_NAME} || true &amp;&amp; ssh -i ${JENKINS_HOME}/NEWRRP.pem -o &apos;StrictHostKeyChecking no&apos; ec2-user@ec2-54-204-112-155.compute-1.amazonaws.com sudo docker run -d --restart=always --name ${JOB_NAME} -p 8088:8080 34.224.201.94:5000/${JOB_NAME}:${BUILD_NUMBER} || true&quot;
+  }
+   stage(&apos;Acceptence Testing&apos;) {
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; -f testNgMavenExample clean compile test &quot;
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: &apos;testNgMavenExample/target/&apos;, reportFiles: &apos;index.html&apos;, reportName: &apos;Acceptence Test Report&apos;])
+  }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

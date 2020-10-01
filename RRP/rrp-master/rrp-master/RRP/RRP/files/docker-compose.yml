@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+  sonarqube:
+    image: sonarqube:6.1
+    ports:
+      - "8080:9000"
+    networks:
+      - sonarnet
+    environment:
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonar
+    volumes:
+      - /home/ec2-user/data/docker/sonar/conf :/opt/sonarqube/conf
+      - /home/ec2-user/data/docker/sonar/data :/opt/sonarqube/data
+      - /home/ec2-user/data/docker/sonar/extn:/opt/sonarqube/extensions
+      - /home/ec2-user/data/docker/sonar/extn/plugins :/opt/sonarqube/extensions/plugins
+    restart: always
+  db:
+    image: postgres
+    networks:
+      - sonarnet
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+    volumes:
+      - /home/ec2-user/data/docker/sql:/var/lib/postgresql
+      - /home/ec2-user/data/docker/sql/data:/var/lib/postgresql/data
+    restart: always
+networks:
+  sonarnet:
+    driver: bridge
+

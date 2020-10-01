@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.8">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.23">
+    <script>
+#node
+   def mvnHome
+   stage(&apos;Code Checkout&apos;) { // for display purposes
+      git &apos;repoUrl&apos;
+      mvnHome = tool &apos;test&apos;
+   }
+   stage(&apos;Build&apos;) {
+      if (isUnix()) {
+         sh &quot;&apos;${mvnHome}/bin/mvn&apos; buildCommand&quot;
+      } else {
+         bat(/&quot;${mvnHome}\mbin\mvn&quot; -Dmaven.test.failure.ignore clean package/)
+      }
+   }
+    stage(&apos;SonarQube analysis&apos;) {
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; sonar:sonar&quot;
+  }
+   stage(&apos;Unit test&apos;) {
+      junit &apos;**/target/surefire-reports/*.xml&apos;
+      archive &apos;target/*.jar&apos;
+   }
+   stage(&apos;Generate Report&apos;){
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; clean install site&quot;
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: &apos;target/site&apos;, reportFiles: &apos;project-reports.html&apos;, reportName: &apos;Generated Reports&apos;])
+   }
+   stage(&apos;deployment&apos;) {
+      deploymentCommand
+  }
+   stage(&apos;Acceptence Testing&apos;) {
+      sh &quot;&apos;${mvnHome}/bin/mvn&apos; -f AcceptFolder clean compile test &quot;
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: &apos;AcceptFolder/target/surefire-reports/&apos;, reportFiles: &apos;index.html&apos;, reportName: &apos;Acceptence Test Report&apos;])
+  }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

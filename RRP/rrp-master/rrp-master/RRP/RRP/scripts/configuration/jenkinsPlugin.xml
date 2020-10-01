@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<configPipe>
+	<jenkins>
+		<jenkinsPlugin>git</jenkinsPlugin>
+	        <jenkinsPlugin>sonar</jenkinsPlugin>
+	        <jenkinsPlugin>sonargraph-plugin</jenkinsPlugin>
+	        <jenkinsPlugin>capitomcat</jenkinsPlugin>
+	        <jenkinsPlugin>maven-plugin</jenkinsPlugin>
+	        <jenkinsPlugin>deploy</jenkinsPlugin>
+	        <jenkinsPlugin>gitbucket</jenkinsPlugin>
+	        <jenkinsPlugin>test-results-analyzer</jenkinsPlugin>
+	        <jenkinsPlugin>workflow-aggregator</jenkinsPlugin>
+	        <jenkinsPlugin>credentials</jenkinsPlugin>
+	        <jenkinsPlugin>ssh</jenkinsPlugin>
+	        <jenkinsPlugin>ssh-slaves</jenkinsPlugin>
+	        <jenkinsPlugin>ssh-agent</jenkinsPlugin>
+	        <jenkinsPlugin>ssh-credentials</jenkinsPlugin>
+	        <jenkinsPlugin>htmlpublisher</jenkinsPlugin>
+	        <jenkinsPlugin>docker-plugin</jenkinsPlugin>
+	        <jenkinsPlugin>docker-build-step</jenkinsPlugin>
+	</jenkins>
+</configPipe>
+

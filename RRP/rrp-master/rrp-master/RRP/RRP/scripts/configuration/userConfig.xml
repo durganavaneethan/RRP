@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<configPipe>
+	<cloud>
+		<cloudProviderName>AWS</cloudProviderName> <!--Please enter AWS or AZURE -->
+		<cloudInstanceCount>5</cloudInstanceCount> <!--Specify the number of instances needed according to the appgroup number-->
+	
+		<!--Enter AWS user credentials -->
+		<AWSaccessKey>AKIAJGS7LXWA6BHYVWIQ</AWSaccessKey>
+		<AWSsecretKey>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</AWSsecretKey>
+		<AWSprivateKeyName>NEWRRP</AWSprivateKeyName>
+		<AWSprivateKeyPath>/home/ec2-user/newrrp.pem</AWSprivateKeyPath>
+		<AWSsecurityGroup>RRP-security</AWSsecurityGroup>
+                
+		<!-- Enter AZURE user credentials -->
+		<AZUREsubscriptionId>ab5ab10c-174d-45de-829b-876aaaf4eaa7</AZUREsubscriptionId>
+		<AZUREclientId>af2033a7-f7e2-4034-9014-14d6666e6dd6</AZUREclientId>
+		<AZUREclientSecretKey>pejVsHGFRfgFugn804CPeLcrpMF27Bzw98kCswc2ir8=</AZUREclientSecretKey>
+		<AZUREtenantId>9afab3d3-0ec5-48eb-9315-22ee18221dc4</AZUREtenantId>
+		<AZUREpublicKeyPath>/home/ec2-user/id_rsa.pub</AZUREpublicKeyPath>
+		<AZUREprivateKeyPath>/home/ec2-user/id_rsa</AZUREprivateKeyPath>
+	</cloud>
+	
+	<jenkins>
+                <jenkinsUsername>wipro</jenkinsUsername><!--specify username for jenkins-->
+                <jenkinsPassword>wipro</jenkinsPassword><!--Specify Password for jenkins-->
+                <jenkinsCLIpath>/home/ec2-user/test/RRP/scripts/jenkins-cli.jar</jenkinsCLIpath><!--Specify jenkins cli full path-->
+                <jenkinsProjectName>petclinic</jenkinsProjectName><!--Enter the project name to be created on jenkins-->
+		<Slaves number='0'> <!--Enter the number of slave machines needed (0 if slave machines are not needed)-->
+                </Slaves>
+        </jenkins>
+	
+	<git>
+		<gitRepositoryName>petclinic</gitRepositoryName><!-- Enter the repository name created in gitbucket -->
+		<AcceptanceTestFolderName>testNgMavenExample</AcceptanceTestFolderName><!--Enter the Acceptance test folder name-->
+	</git>
+
+    	<applications><!--Specify the appgroup and appname. Number of appgroup should be same as cloudInstanceCount number-->
+		<BuildBlock>
+			<appgroup>
+				<appname>gitbucket</appname>
+				<appname>jenkins</appname>
+			</appgroup>
+		</BuildBlock>
+		<TestBlock>
+			<appgroup>
+                                <appname>sonarqube</appname>
+                                <appname>selenium</appname>
+			</appgroup>
+		</TestBlock>
+		<DeployBlock>
+			<Environment name='Dev'><!--Specify Dev or QA or Prod Environment(You can specify multiple Environment tag if needed)-->
+				<appgroup count='2'>
+					<appname>docker</appname>
+				</appgroup>
+			</Environment>
+		</DeployBlock>
+	</applications>
+</configPipe>
+
